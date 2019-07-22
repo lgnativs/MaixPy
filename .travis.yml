@@ -23,17 +23,17 @@ jobs:
       env: NAME="maixpy build"
       install:
         - sudo apt-get update
-        - sudo apt-get install -y sshpass
+        - sudo apt-get install -y sshpass p7zip-full
         - wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
-        - sudo tar -Jxvf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
+        - sudo tar -Jxf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
+        - rm -f kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
       script:
         - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, BRANCH=$BRANCH"
-        - cd projects/maixpy_k210
-        - python project.py build
+        - cd tools/release
+        - chmod +x release.sh && ./release.sh
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
         - time_now=$(date "+%Y_%m_%d_%H_%M_%S")
-        - firmware_name=maixpy_${curr_branch}_${time_now}_${rev}.bin && echo ${firmware_name}
-        - cd build
-        - mv maixpy.bin $firmware_name
+        - cd bin
+        - firmware_dir=`ls`
         - sudo sh -c "echo StrictHostKeyChecking no >>/etc/ssh/ssh_config"
-        - sshpass -p ${USER_PASSWD} scp $firmware_name ${SERVER_USER}@${SERVER_ADDR}:${SERVER_FOLDER_PATH}/${curr_branch}/
+        - sshpass -p ${USER_PASSWD} scp -r $firmware_dir ${SERVER_USER}@${SERVER_ADDR}:${SERVER_FOLDER_PATH}/${curr_branch}/
